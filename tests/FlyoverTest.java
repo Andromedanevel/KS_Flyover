@@ -76,6 +76,20 @@ public final class FlyoverTest {
         assert Sky.parse("garbage") == null && Sky.parse(42) == null && Sky.parse(null) == null;
         assert Sky.parse("v1|d|,PHX,,").flights.get(0).label().equals("PHX");
 
+        // ---- label styles ----
+        Sky.Flight tp = Sky.parse("v1|d|a,TP1352,A20N,92,AMS,LIS,Amsterdam,Lisbon").flights.get(0);
+        assert tp.label(Config.LABEL_FLIGHT).equals("TP1352 \u00B7 A20N");
+        assert tp.label(Config.LABEL_CODES).equals("AMS \u2192 LIS");
+        assert tp.label(Config.LABEL_CITIES).equals("Amsterdam \u2192 Lisbon");
+        assert tp.label(Config.LABEL_FLIGHT_ROUTE).equals("TP1352 \u00B7 AMS \u2192 LIS");
+        Sky.Flight ga = Sky.parse("v1|d|p,PHABC,C172,300,,,,").flights.get(0);
+        assert ga.label(Config.LABEL_CODES).equals("PHABC \u00B7 C172") && ga.label(Config.LABEL_CITIES).equals("PHABC \u00B7 C172");
+        Sky.Flight half = Sky.parse("v1|d|h,KL1,B738,10,,AMS,,").flights.get(0);
+        assert half.label(Config.LABEL_CITIES).equals("\u2192 AMS") : half.label(Config.LABEL_CITIES);
+        assert new Config(map("labelStyle", "Cities")).labelStyle == Config.LABEL_CITIES;
+        assert new Config(map("labelStyle", "nonsense")).labelStyle == Config.LABEL_FLIGHT;
+        assert new Config(map()).template().contains("airport_destination_city");
+
         // ---- lifecycle ----
         Host host = new Host();
         FlyoverPlugin plugin = new FlyoverPlugin();

@@ -92,7 +92,7 @@ final class SkyView extends View {
             }
             animating = true;
             float p = inPass / (float) crossing;
-            String label = c.showLabel ? t.flight.label().toUpperCase() : "";
+            String label = c.showLabel ? t.flight.label(c.labelStyle).toUpperCase() : "";
             float labelW = label.isEmpty() ? 0 : text.measureText(label) + gap;
             boolean ltr = t.flight.leftToRight();
 

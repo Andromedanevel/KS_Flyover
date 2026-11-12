@@ -214,9 +214,9 @@ public final class FlyoverPlugin implements KioskPlugin {
     private void startDemo() {
         long now = System.currentTimeMillis();
         List<Sky.Track> next = new ArrayList<>();
-        next.add(new Sky.Track(new Sky.Flight("demo1", "TP1352", "A20N", 95), now, now + DEMO_MS, 0));
+        next.add(new Sky.Track(new Sky.Flight("demo1", "TP1352", "A20N", 95, "AMS", "LIS", "Amsterdam", "Lisbon"), now, now + DEMO_MS, 0));
         if (config.maxPlanes > 1) {
-            next.add(new Sky.Track(new Sky.Flight("demo2", "KL1834", "E295", 265), now + config.cycleMs() * 45 / 100, now + DEMO_MS, 1));
+            next.add(new Sky.Track(new Sky.Flight("demo2", "KL1834", "E295", 265, "BER", "AMS", "Berlin", "Amsterdam"), now + config.cycleMs() * 45 / 100, now + DEMO_MS, 1));
         }
         tracks = next;
         publish();
@@ -237,7 +237,7 @@ public final class FlyoverPlugin implements KioskPlugin {
             int n = lastFlights.size();
             StringBuilder b = new StringBuilder();
             b.append(n == 0 ? "No planes nearby" : n == 1 ? "1 plane nearby: " : n + " planes nearby: ");
-            for (int i = 0; i < n; i++) b.append(i == 0 ? "" : ", ").append(lastFlights.get(i).label());
+            for (int i = 0; i < n; i++) b.append(i == 0 ? "" : ", ").append(lastFlights.get(i).label(Config.LABEL_FLIGHT_ROUTE));
             b.append(" · Screensaver ").append(screensaverActive ? "on" : "off");
             if (screensaverView != null) b.append(" (view: ").append(screensaverView).append(')');
             if (screensaverActive && !viewAllowed()) b.append(" · not shown on this view");

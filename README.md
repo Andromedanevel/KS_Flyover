@@ -1,6 +1,6 @@
 # Flyover for Kiosk Satellite
 
-Planes that are really flying over your home cross Kiosk Satellite's own screensaver, labelled with their flight number and aircraft type (`TP1352 · A20N`). The screensaver itself — weather, clock, photos — stays Kiosk Satellite's own; this plugin only adds the planes on top.
+Planes that are really flying over your home cross Kiosk Satellite's own screensaver, labelled with their flight number and aircraft type (`TP1352 · A20N`), their route (`AMS → LIS`, `Amsterdam → Lisbon`) or both. The screensaver itself — weather, clock, photos — stays Kiosk Satellite's own; this plugin only adds the planes on top.
 
 - Eastbound planes fly left to right, westbound right to left.
 - A plane flies across, pauses, and comes round again while it stays in range. One that leaves finishes its pass.
@@ -33,7 +33,8 @@ Home Assistant does the flight lookup; the plugin only receives a short template
 | Only on screensaver views | empty | Comma-separated view names (the plugin status shows the current one). Empty = every screensaver |
 | Height on screen | 28 % | Flight path distance from the top |
 | Plane size | 64 dp | |
-| Show flight number and type | on | |
+| Show label | on | |
+| Label | Flight number and type | Or airport codes, cities, or flight number and airport codes. Planes without a known route (private and some cargo flights) show their flight number |
 | Contrail | on | |
 | Navigation lights at night | on | |
 | Crossing time | 40 s | One pass across the screen |
