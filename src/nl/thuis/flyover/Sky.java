@@ -14,10 +14,14 @@ import java.util.Map;
 final class Sky {
     /** One plane as reported by HA. */
     static final class Flight {
-        final String id, code, type;
+        final String id, code, type, from, to, fromCity, toCity;
         final int heading;
         Flight(String id, String code, String type, int heading) {
+            this(id, code, type, heading, "", "", "", "");
+        }
+        Flight(String id, String code, String type, int heading, String from, String to, String fromCity, String toCity) {
             this.id = id; this.code = code; this.type = type; this.heading = heading;
+            this.from = from; this.to = to; this.fromCity = fromCity; this.toCity = toCity;
         }
         /** Eastbound planes (heading 0 to 179) fly left to right, the way they would on a north-up map. */
         boolean leftToRight() { int h = ((heading % 360) + 360) % 360; return h < 180; }
@@ -25,6 +29,24 @@ final class Sky {
             if (code.isEmpty()) return type;
             if (type.isEmpty()) return code;
             return code + " · " + type;
+        }
+        /** The label in one of the Config.LABEL_* styles. Missing route details fall back to the flight number. */
+        String label(int style) {
+            String codes = route(from, to), cities = route(fromCity, toCity);
+            switch (style) {
+                case Config.LABEL_CODES: return codes.isEmpty() ? label() : codes;
+                case Config.LABEL_CITIES: return !cities.isEmpty() ? cities : codes.isEmpty() ? label() : codes;
+                case Config.LABEL_FLIGHT_ROUTE:
+                    if (codes.isEmpty()) return label();
+                    return code.isEmpty() ? codes : code + " · " + codes;
+                default: return label();
+            }
+        }
+        private static String route(String a, String b) {
+            if (a.isEmpty() && b.isEmpty()) return "";
+            if (a.isEmpty()) return "→ " + b;
+            if (b.isEmpty()) return a + " →";
+            return a + " → " + b;
         }
     }
 
@@ -71,10 +93,12 @@ final class Sky {
             try { heading = Integer.parseInt(f[3].trim()); } catch (NumberFormatException e) { heading = 90; }
             String code = f[1].trim(), type = f[2].trim();
             String id = f[0].trim().isEmpty() ? code + "/" + type : f[0].trim();
-            flights.add(new Flight(id, code, type, heading));
+            flights.add(new Flight(id, code, type, heading, field(f, 4), field(f, 5), field(f, 6), field(f, 7)));
         }
         return new Reading("n".equals(parts[1]), flights);
     }
+
+    private static String field(String[] f, int i) { return i < f.length ? f[i].trim() : ""; }
 
     /**
      * Folds a new reading into the current tracks. Planes keep the time they were first seen, so their animation does

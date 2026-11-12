@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "flyover",
   "name": "Flyover",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "apiVersion": 1,
   "minAndroidSdk": 24,
   "minAppVersion": "2026.11.11",
@@ -10,7 +10,12 @@
   "description": "Planes that are really flying over your home cross Kiosk Satellite's own screensaver, labelled with their flight number and aircraft type. Uses the Flightradar24 integration in Home Assistant. Visual only: taps go straight through to the screensaver.",
   "author": "Eveline Verhulst",
   "license": "Apache-2.0",
-  "capabilities": ["overlay", "host.read", "host.control", "ha"],
+  "capabilities": [
+    "overlay",
+    "host.read",
+    "host.control",
+    "ha"
+  ],
   "settings": [
     {
       "key": "flightsEntity",
@@ -77,9 +82,23 @@
     {
       "key": "showLabel",
       "type": "boolean",
-      "title": "Show flight number and type",
+      "title": "Show label",
       "default": true,
       "group": "Look"
+    },
+    {
+      "key": "labelStyle",
+      "type": "select",
+      "title": "Label",
+      "default": "Flight number and type",
+      "options": [
+        "Flight number and type",
+        "Airport codes",
+        "Cities",
+        "Flight number and airport codes"
+      ],
+      "group": "Look",
+      "description": "TP1352 · A20N, AMS → LIS, Amsterdam → Lisbon or TP1352 · AMS → LIS. Planes without a known route show their flight number."
     },
     {
       "key": "showTrail",
@@ -134,11 +153,20 @@
     }
   ],
   "commands": [
-    { "id": "demo", "title": "Demo: fly planes now" }
+    {
+      "id": "demo",
+      "title": "Demo: fly planes now"
+    }
   ],
   "groups": [
-    { "title": "Flights" },
-    { "title": "Look" },
-    { "title": "Motion" }
+    {
+      "title": "Flights"
+    },
+    {
+      "title": "Look"
+    },
+    {
+      "title": "Motion"
+    }
   ]
 }

@@ -24,6 +24,10 @@ final class Config {
     final boolean nightLights;
     final int fps;
     final List<String> views;
+    final int labelStyle;
+
+    static final int LABEL_FLIGHT = 0, LABEL_CODES = 1, LABEL_CITIES = 2, LABEL_FLIGHT_ROUTE = 3;
+    static final String[] LABEL_OPTIONS = {"Flight number and type", "Airport codes", "Cities", "Flight number and airport codes"};
 
     Config(Map<String, Object> s) {
         String entity = string(s, "flightsEntity", "sensor.flightradar24_current_in_area").trim();
@@ -44,6 +48,10 @@ final class Config {
             if (!v.isEmpty()) list.add(v);
         }
         views = Collections.unmodifiableList(list);
+        String style = string(s, "labelStyle", LABEL_OPTIONS[0]);
+        int found = 0;
+        for (int i = 0; i < LABEL_OPTIONS.length; i++) if (LABEL_OPTIONS[i].equals(style)) found = i;
+        labelStyle = found;
     }
 
     /** One full cycle of a plane: across the screen, then the pause before it comes round again. */
@@ -58,7 +66,7 @@ final class Config {
     /**
      * The template Home Assistant renders and streams back. It does the filtering on the HA side, so the plugin never
      * has to receive the full Flightradar24 attribute (which can be larger than the 30 KB KS passes on). Result:
-     * v1|d or n|id,flight,type,heading|id,flight,type,heading
+     * v1|d or n|id,flight,type,heading,from,to,fromCity,toCity|... Commas and bars inside values become spaces.
      */
     String template() {
         return "{%- set ns = namespace(out=[]) -%}"
@@ -68,7 +76,10 @@ final class Config {
             + "{%- if ns.out | length < " + maxPlanes + " and f.distance <= " + maxDistanceKm
             + " and (f.on_ground | default(0) | int(0)) == 0 -%}"
             + "{%- set ns.out = ns.out + [[(f.id or '') | string, f.flight_number or f.callsign or '',"
-            + " f.aircraft_code or '', (f.heading or 0) | int(0)] | join(',')] -%}"
+            + " f.aircraft_code or '', (f.heading or 0) | int(0),"
+            + " f.airport_origin_code_iata or '', f.airport_destination_code_iata or '',"
+            + " f.airport_origin_city or '', f.airport_destination_city or '']"
+            + " | map('string') | map('replace', ',', ' ') | map('replace', '|', ' ') | join(',')] -%}"
             + "{%- endif -%}{%- endfor -%}{%- endif -%}"
             + "v1|{{ 'n' if is_state('sun.sun', 'below_horizon') else 'd' }}|{{ ns.out | join('|') }}";
     }
