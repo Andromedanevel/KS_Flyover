@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "id": "flyover",
+  "name": "Flyover",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAndroidSdk": 24,
+  "minAppVersion": "2026.11.11",
+  "entryClass": "nl.thuis.flyover.FlyoverPlugin",
+  "description": "Planes that are really flying over your home cross Kiosk Satellite's own screensaver, labelled with their flight number and aircraft type. Uses the Flightradar24 integration in Home Assistant. Visual only: taps go straight through to the screensaver.",
+  "author": "Andromedanevel",
+  "license": "Apache-2.0",
+  "capabilities": ["overlay", "host.read", "host.control", "ha"],
+  "settings": [
+    {
+      "key": "flightsEntity",
+      "type": "entity",
+      "title": "Flights sensor",
+      "default": "sensor.flightradar24_current_in_area",
+      "group": "Flights",
+      "description": "The Flightradar24 \"Current in area\" sensor."
+    },
+    {
+      "key": "maxDistance",
+      "type": "number",
+      "title": "Maximum distance",
+      "default": 15,
+      "min": 1,
+      "max": 100,
+      "step": 1,
+      "unit": "km",
+      "group": "Flights",
+      "description": "Only planes closer than this fly across the screen."
+    },
+    {
+      "key": "maxPlanes",
+      "type": "number",
+      "title": "Planes at once",
+      "default": 2,
+      "min": 1,
+      "max": 2,
+      "step": 1,
+      "group": "Flights",
+      "description": "The nearest one or two planes."
+    },
+    {
+      "key": "views",
+      "type": "string",
+      "title": "Only on screensaver views",
+      "default": "",
+      "group": "Flights",
+      "description": "Comma-separated screensaver view names, as shown in the plugin status. Empty shows the planes over every screensaver."
+    },
+    {
+      "key": "height",
+      "type": "number",
+      "title": "Height on screen",
+      "default": 28,
+      "min": 5,
+      "max": 85,
+      "step": 1,
+      "unit": "%",
+      "group": "Look",
+      "description": "Distance of the flight path from the top of the screen."
+    },
+    {
+      "key": "size",
+      "type": "number",
+      "title": "Plane size",
+      "default": 64,
+      "min": 24,
+      "max": 160,
+      "step": 4,
+      "unit": "dp",
+      "group": "Look"
+    },
+    {
+      "key": "showLabel",
+      "type": "boolean",
+      "title": "Show flight number and type",
+      "default": true,
+      "group": "Look"
+    },
+    {
+      "key": "showTrail",
+      "type": "boolean",
+      "title": "Contrail",
+      "default": true,
+      "group": "Look"
+    },
+    {
+      "key": "nightLights",
+      "type": "boolean",
+      "title": "Navigation lights at night",
+      "default": true,
+      "group": "Look",
+      "description": "Blinking strobe, beacon and wingtip light after sunset (sun.sun)."
+    },
+    {
+      "key": "crossing",
+      "type": "number",
+      "title": "Crossing time",
+      "default": 40,
+      "min": 10,
+      "max": 180,
+      "step": 5,
+      "unit": "s",
+      "group": "Motion",
+      "description": "How long one pass across the screen takes."
+    },
+    {
+      "key": "pause",
+      "type": "number",
+      "title": "Pause between passes",
+      "default": 15,
+      "min": 0,
+      "max": 300,
+      "step": 5,
+      "unit": "s",
+      "group": "Motion",
+      "description": "While a plane stays in range it comes round again after this pause."
+    },
+    {
+      "key": "fps",
+      "type": "number",
+      "title": "Frame rate",
+      "default": 30,
+      "min": 10,
+      "max": 60,
+      "step": 10,
+      "unit": "fps",
+      "group": "Motion",
+      "description": "Lower saves CPU on older tablets. The plugin draws nothing between passes."
+    }
+  ],
+  "commands": [
+    { "id": "demo", "title": "Demo: fly planes now" }
+  ],
+  "groups": [
+    { "title": "Flights" },
+    { "title": "Look" },
+    { "title": "Motion" }
+  ]
+}
