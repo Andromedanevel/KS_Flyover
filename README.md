@@ -4,7 +4,8 @@ Planes that are really flying over your home cross Kiosk Satellite's own screens
 
 Your screensaver stays exactly as it is — weather, clock or photos. Flyover only adds the planes on top.
 
-- Eastbound planes fly left to right, westbound right to left, with a contrail behind them.
+- Each aircraft gets a silhouette that matches its type: airliner, widebody, jumbo, regional or business jet, turboprop, light aircraft or helicopter, with spinning propellers and rotors.
+- Eastbound planes fly left to right, westbound right to left. Jets leave a contrail.
 - A plane flies across, pauses and comes round again while it stays in range. One that leaves finishes its pass.
 - At night the plane turns grey with lit cabin windows and blinking strobe, beacon and wingtip lights.
 - Visual only: every tap goes straight through to the screensaver, so dismissing it works as before.
@@ -32,7 +33,7 @@ Or search for `Flyover` in **Settings > Plugin Manager > Browse plugins** in Kio
 2. Choose **Add plugin**, paste `https://github.com/Andromedanevel/ks-flyover` and choose **Preview**.
 3. Review the plugin and choose **Trust and install**, then enable **Flyover**.
 
-Run the **Demo: fly planes now** action from the plugin's page or the kiosk drawer to see it straight away: it starts the screensaver and flies two demo planes for two minutes.
+Run the **Demo: fly planes now** action from the plugin's page or the kiosk drawer to see it straight away: it starts the screensaver and flies an airliner and a helicopter for two minutes.
 
 ## Settings
 
@@ -44,6 +45,7 @@ Run the **Demo: fly planes now** action from the plugin's page or the kiosk draw
 | Only on screensaver views | empty | Comma-separated view names, as the plugin status shows them. Empty shows planes over every screensaver |
 | Height on screen | 28 % | Distance of the flight path from the top |
 | Plane size | 64 dp | |
+| Match the aircraft type | on | Off draws every plane as an airliner |
 | Show label | on | |
 | Label | Flight number and type | Or airport codes, cities, or flight number and airport codes. Planes without a known route show their flight number |
 | Contrail | on | |

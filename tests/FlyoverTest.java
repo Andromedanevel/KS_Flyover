@@ -90,6 +90,42 @@ public final class FlyoverTest {
         assert new Config(map("labelStyle", "nonsense")).labelStyle == Config.LABEL_FLIGHT;
         assert new Config(map()).template().contains("airport_destination_city");
 
+        // ---- aircraft shapes ----
+        assert Shapes.forType("A20N", "Airplane") == Shapes.NARROW;
+        assert Shapes.forType("BCS3", "Airplane") == Shapes.NARROW;
+        assert Shapes.forType("E190", "Airplane") == Shapes.NARROW;
+        assert Shapes.forType("B789", "Airplane") == Shapes.WIDE;
+        assert Shapes.forType("A346", "Airplane") == Shapes.QUAD;
+        assert Shapes.forType("B748", "Airplane") == Shapes.JUMBO && Shapes.forType("A388", null) == Shapes.JUMBO;
+        assert Shapes.forType("CRJ9", "Airplane") == Shapes.REARJET && Shapes.forType("C56X", "") == Shapes.REARJET;
+        assert Shapes.forType("AT76", "Airplane") == Shapes.TURBOPROP && Shapes.forType("DH8D", "") == Shapes.TURBOPROP;
+        assert Shapes.forType("C172", "Airplane") == Shapes.LIGHT && Shapes.forType("BE35", "") == Shapes.LIGHT;
+        assert Shapes.forType("C17", "Airplane") == Shapes.QUAD : "C-17, not a Cessna";
+        assert Shapes.forType("EC35", "") == Shapes.HELICOPTER;
+        assert Shapes.forType("XXXX", "Helicopter") == Shapes.HELICOPTER;
+        assert Shapes.forType("", "") == Shapes.NARROW && Shapes.forType(null, null) == Shapes.NARROW;
+        assert Shapes.forType(" a20n ", "airplane") == Shapes.NARROW;
+        for (Shapes.Shape shape : Shapes.ALL) {
+            assert shape.slowness <= Shapes.MAX_SLOWNESS;
+            for (Shapes.Part part : shape.parts) {
+                float[][] cmds = SvgPath.commands(part.d);
+                assert cmds.length >= 3 && cmds[0][0] == 'M' : shape.name + ": " + part.d;
+                for (float[] cmd : cmds) for (int i = 1; i < cmd.length; i++) {
+                    float v = cmd[i];
+                    boolean xy = cmd[0] == 'H' || (cmd[0] != 'V' && i % 2 == 1);
+                    assert v >= -1 && v <= (xy ? Shapes.W + 1 : Shapes.H + 1) : shape.name + " outside its box: " + part.d;
+                }
+            }
+        }
+        Sky.Flight heli = Sky.parse("v1|d|h,PHPXE,EC35,300,,,,,Helicopter").flights.get(0);
+        assert heli.category.equals("Helicopter") && heli.shape() == Shapes.HELICOPTER;
+        assert Sky.parse("v1|d|a,TP1352,A20N,92,AMS,LIS,Amsterdam,Lisbon").flights.get(0).category.isEmpty();
+        assert new Config(map()).template().contains("f.aircraft_category");
+        assert new Config(map()).typeShapes && !new Config(map("typeShapes", false)).typeShapes;
+        Config slow = new Config(map("crossing", 40));
+        assert slow.crossingMs(Shapes.HELICOPTER) == 68_000 && slow.crossingMs(Shapes.NARROW) == 40_000;
+        assert new Config(map("crossing", 40, "typeShapes", false)).crossingMs(Shapes.HELICOPTER) == 40_000;
+
         // ---- lifecycle ----
         Host host = new Host();
         FlyoverPlugin plugin = new FlyoverPlugin();
@@ -103,8 +139,14 @@ public final class FlyoverTest {
         assert host.overlay == null : "no overlay while the screensaver is off";
 
         String ev = "ks.ha.subscription." + key;
-        plugin.onEvent(ev, templateEvent("v1|d|a,TP1352,A20N,92|b,KL1834,E295,265"));
+        plugin.onEvent(ev, templateEvent("v1|d|a,TP1352,A20N,92,AMS,LIS,Amsterdam,Lisbon|b,KL1834,E295,265"));
         assert host.status.contains("2 planes nearby: TP1352 · A20N, KL1834 · E295") : host.status;
+        // The status line follows the Label setting, like the screensaver.
+        plugin.configure(map("labelStyle", "Cities"));
+        assert host.status.contains("2 planes nearby: Amsterdam → Lisbon, KL1834 · E295") : host.status;
+        plugin.configure(map("labelStyle", "Airport codes"));
+        assert host.status.contains("nearby: AMS → LIS, KL1834 · E295") : host.status;
+        plugin.configure(map());
 
         // Screensaver comes up: one full-screen, top-layer, touch-through overlay.
         plugin.onEvent("ks.screensaver.state", map("active", true));
@@ -181,8 +223,8 @@ public final class FlyoverTest {
         Sky.Track a = tr2.get(0);
         assert a.firstSeen == t0 && a.goneAt == Long.MAX_VALUE : "kept its start time";
         assert tr2.size() == 2 && tr2.get(1).goneAt == t0 + 5000 : "b finishes its pass";
-        List<Sky.Track> tr3 = Sky.merge(tr2, Sky.parse("v1|d|a,A1,A320,90").flights, t0 + 5000 + c.cycleMs() + 1, c);
-        assert tr3.size() == 1 : "b dropped after a full cycle";
+        List<Sky.Track> tr3 = Sky.merge(tr2, Sky.parse("v1|d|a,A1,A320,90").flights, t0 + 5000 + c.longestCycleMs() + 1, c);
+        assert tr3.size() == 1 : "b dropped once even the slowest pass is over";
 
         System.out.println("FlyoverTest passed");
     }

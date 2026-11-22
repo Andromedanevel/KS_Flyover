@@ -14,15 +14,21 @@ import java.util.Map;
 final class Sky {
     /** One plane as reported by HA. */
     static final class Flight {
-        final String id, code, type, from, to, fromCity, toCity;
+        final String id, code, type, from, to, fromCity, toCity, category;
         final int heading;
         Flight(String id, String code, String type, int heading) {
-            this(id, code, type, heading, "", "", "", "");
+            this(id, code, type, heading, "", "", "", "", "");
         }
         Flight(String id, String code, String type, int heading, String from, String to, String fromCity, String toCity) {
-            this.id = id; this.code = code; this.type = type; this.heading = heading;
-            this.from = from; this.to = to; this.fromCity = fromCity; this.toCity = toCity;
+            this(id, code, type, heading, from, to, fromCity, toCity, "");
         }
+        Flight(String id, String code, String type, int heading, String from, String to, String fromCity, String toCity,
+               String category) {
+            this.id = id; this.code = code; this.type = type; this.heading = heading;
+            this.from = from; this.to = to; this.fromCity = fromCity; this.toCity = toCity; this.category = category;
+        }
+        /** The silhouette for this aircraft. */
+        Shapes.Shape shape() { return Shapes.forType(type, category); }
         /** Eastbound planes (heading 0 to 179) fly left to right, the way they would on a north-up map. */
         boolean leftToRight() { int h = ((heading % 360) + 360) % 360; return h < 180; }
         String label() {
@@ -93,7 +99,7 @@ final class Sky {
             try { heading = Integer.parseInt(f[3].trim()); } catch (NumberFormatException e) { heading = 90; }
             String code = f[1].trim(), type = f[2].trim();
             String id = f[0].trim().isEmpty() ? code + "/" + type : f[0].trim();
-            flights.add(new Flight(id, code, type, heading, field(f, 4), field(f, 5), field(f, 6), field(f, 7)));
+            flights.add(new Flight(id, code, type, heading, field(f, 4), field(f, 5), field(f, 6), field(f, 7), field(f, 8)));
         }
         return new Reading("n".equals(parts[1]), flights);
     }
@@ -119,9 +125,10 @@ final class Sky {
             }
         }
         long cycle = config.cycleMs();
+        long longest = config.longestCycleMs();
         for (Track t : previous.values()) { // planes that left: let the running pass finish
             long gone = t.goneAt == Long.MAX_VALUE ? now : t.goneAt;
-            if (now - gone < cycle && !lanes[t.lane]) {
+            if (now - gone < longest && !lanes[t.lane]) {
                 next.add(new Track(t.flight, t.firstSeen, gone, t.lane));
                 lanes[t.lane] = true;
             }
