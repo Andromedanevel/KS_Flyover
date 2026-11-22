@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+
+- **Planes match their aircraft type**: airliner, widebody, jumbo (747, A380), four-engine, regional and business jets with rear engines, turboprops, light aircraft and helicopters each get their own silhouette and size, chosen from the ICAO type code and Flightradar24's category. Propellers and rotors spin; smaller and lower-flying aircraft cross more slowly and leave no contrail. Turn off **Match the aircraft type** for the single airliner shape.
+- The plugin status line shows planes in the chosen **Label** style, like the screensaver.
+- The demo now flies an airliner and a helicopter.
+
 ## 1.0.1
 
 - Smoother flight: frames are now synced to the screen refresh and timed from it, so each frame moves the plane the same distance. A lower frame rate skips refreshes evenly instead of drifting against them.

@@ -25,6 +25,7 @@ final class Config {
     final int fps;
     final List<String> views;
     final int labelStyle;
+    final boolean typeShapes;
 
     static final int LABEL_FLIGHT = 0, LABEL_CODES = 1, LABEL_CITIES = 2, LABEL_FLIGHT_ROUTE = 3;
     static final String[] LABEL_OPTIONS = {"Flight number and type", "Airport codes", "Cities", "Flight number and airport codes"};
@@ -52,10 +53,19 @@ final class Config {
         int found = 0;
         for (int i = 0; i < LABEL_OPTIONS.length; i++) if (LABEL_OPTIONS[i].equals(style)) found = i;
         labelStyle = found;
+        typeShapes = bool(s, "typeShapes", true);
     }
 
     /** One full cycle of a plane: across the screen, then the pause before it comes round again. */
     long cycleMs() { return (crossingSeconds + pauseSeconds) * 1000L; }
+
+    /** Crossing time for one shape: helicopters and light aircraft cross more slowly when shapes match the type. */
+    long crossingMs(Shapes.Shape shape) {
+        return (long) (crossingSeconds * 1000L * (typeShapes ? shape.slowness : 1f));
+    }
+
+    /** The longest cycle any shape can have; a plane that left the area is kept this long to finish its pass. */
+    long longestCycleMs() { return (long) (crossingSeconds * 1000L * Shapes.MAX_SLOWNESS) + pauseSeconds * 1000L; }
 
     /** Whether the HA template needs to be subscribed again for this change. */
     boolean sameQuery(Config other) {
@@ -66,7 +76,7 @@ final class Config {
     /**
      * The template Home Assistant renders and streams back. It does the filtering on the HA side, so the plugin never
      * has to receive the full Flightradar24 attribute (which can be larger than the 30 KB KS passes on). Result:
-     * v1|d or n|id,flight,type,heading,from,to,fromCity,toCity|... Commas and bars inside values become spaces.
+     * v1|d or n|id,flight,type,heading,from,to,fromCity,toCity,category|... Commas and bars inside values become spaces.
      */
     String template() {
         return "{%- set ns = namespace(out=[]) -%}"
@@ -78,7 +88,7 @@ final class Config {
             + "{%- set ns.out = ns.out + [[(f.id or '') | string, f.flight_number or f.callsign or '',"
             + " f.aircraft_code or '', (f.heading or 0) | int(0),"
             + " f.airport_origin_code_iata or '', f.airport_destination_code_iata or '',"
-            + " f.airport_origin_city or '', f.airport_destination_city or '']"
+            + " f.airport_origin_city or '', f.airport_destination_city or '', f.aircraft_category or '']"
             + " | map('string') | map('replace', ',', ' ') | map('replace', '|', ' ') | join(',')] -%}"
             + "{%- endif -%}{%- endfor -%}{%- endif -%}"
             + "v1|{{ 'n' if is_state('sun.sun', 'below_horizon') else 'd' }}|{{ ns.out | join('|') }}";
