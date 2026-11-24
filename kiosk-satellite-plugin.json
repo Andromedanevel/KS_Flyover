@@ -8,7 +8,7 @@
   "minAppVersion": "2026.11.11",
   "entryClass": "nl.thuis.flyover.FlyoverPlugin",
   "description": "Planes that are really flying over your home cross Kiosk Satellite's own screensaver, labelled with their flight number and aircraft type. Uses the Flightradar24 integration in Home Assistant. Visual only: taps go straight through to the screensaver.",
-  "author": "Eveline Verhulst",
+  "author": "Andromedanevel",
   "license": "Apache-2.0",
   "capabilities": [
     "overlay",
