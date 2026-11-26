@@ -28,7 +28,15 @@ final class Sky {
             this.from = from; this.to = to; this.fromCity = fromCity; this.toCity = toCity; this.category = category;
         }
         /** The silhouette for this aircraft. */
-        Shapes.Shape shape() { return Shapes.forType(type, category); }
+        Shapes.Shape shape() { return isIss() ? Shapes.ISS : Shapes.forType(type, category); }
+
+        static final String SPACE = "Space";
+
+        /** The ISS as a "flight": always eastbound, labelled with how high it stands above the horizon. */
+        static Flight iss(int elevation) {
+            return new Flight("ISS", "ISS", elevation + "\u00B0", 90, "", "", "", "", SPACE);
+        }
+        boolean isIss() { return SPACE.equals(category); }
         /** Eastbound planes (heading 0 to 179) fly left to right, the way they would on a north-up map. */
         boolean leftToRight() { int h = ((heading % 360) + 360) % 360; return h < 180; }
         String label() {
@@ -38,6 +46,7 @@ final class Sky {
         }
         /** The label in one of the Config.LABEL_* styles. Missing route details fall back to the flight number. */
         String label(int style) {
+            if (isIss()) return label();
             String codes = route(from, to), cities = route(fromCity, toCity);
             switch (style) {
                 case Config.LABEL_CODES: return codes.isEmpty() ? label() : codes;
@@ -86,6 +95,9 @@ final class Sky {
         Reading(boolean night, List<Flight> flights) { this.night = night; this.flights = flights; }
     }
 
+    /** The ISS flies in its own lane, above the planes. */
+    static final int ISS_LANE = -1;
+
     static Reading parse(Object result) {
         if (!(result instanceof String)) return null;
         String[] parts = ((String) result).trim().split("\\|", -1);
@@ -93,6 +105,13 @@ final class Sky {
         List<Flight> flights = new ArrayList<>();
         for (int i = 2; i < parts.length; i++) {
             if (parts[i].isEmpty()) continue;
+            if (parts[i].startsWith("@iss,")) {             // the ISS, with its elevation above our horizon
+                String[] f = parts[i].split(",", -1);
+                int elevation;
+                try { elevation = Integer.parseInt(f[1].trim()); } catch (RuntimeException e) { continue; }
+                flights.add(Flight.iss(elevation));
+                continue;
+            }
             String[] f = parts[i].split(",", -1);
             if (f.length < 4) continue;
             int heading;
@@ -120,7 +139,7 @@ final class Sky {
             Track t = previous.get(f.id);
             if (t != null) {
                 next.add(new Track(f, t.firstSeen, Long.MAX_VALUE, t.lane));
-                lanes[t.lane] = true;
+                if (t.lane >= 0) lanes[t.lane] = true;
                 previous.remove(f.id);
             }
         }
@@ -128,9 +147,9 @@ final class Sky {
         long longest = config.longestCycleMs();
         for (Track t : previous.values()) { // planes that left: let the running pass finish
             long gone = t.goneAt == Long.MAX_VALUE ? now : t.goneAt;
-            if (now - gone < longest && !lanes[t.lane]) {
+            if (now - gone < longest && (t.lane < 0 || !lanes[t.lane])) {
                 next.add(new Track(t.flight, t.firstSeen, gone, t.lane));
-                lanes[t.lane] = true;
+                if (t.lane >= 0) lanes[t.lane] = true;
             }
         }
         int added = 0;
@@ -138,6 +157,7 @@ final class Sky {
             boolean known = false;
             for (Track t : next) if (t.flight.id.equals(f.id)) { known = true; break; }
             if (known) continue;
+            if (f.isIss()) { next.add(new Track(f, now, Long.MAX_VALUE, ISS_LANE)); continue; }
             int lane = 0;
             while (lane < 2 && lanes[lane]) lane++;
             if (lane >= 2) continue;

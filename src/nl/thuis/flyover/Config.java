@@ -26,6 +26,8 @@ final class Config {
     final List<String> views;
     final int labelStyle;
     final boolean typeShapes;
+    final String issEntity;
+    final int issMinElevation;
 
     static final int LABEL_FLIGHT = 0, LABEL_CODES = 1, LABEL_CITIES = 2, LABEL_FLIGHT_ROUTE = 3;
     static final String[] LABEL_OPTIONS = {"Flight number and type", "Airport codes", "Cities", "Flight number and airport codes"};
@@ -42,7 +44,7 @@ final class Config {
         showLabel = bool(s, "showLabel", true);
         showTrail = bool(s, "showTrail", true);
         nightLights = bool(s, "nightLights", true);
-        fps = number(s, "fps", 30, 10, 60);
+        fps = number(s, "fps", 60, 10, 60);
         List<String> list = new ArrayList<>();
         for (String part : string(s, "views", "").split(",")) {
             String v = part.trim().toLowerCase(Locale.ROOT);
@@ -54,6 +56,9 @@ final class Config {
         for (int i = 0; i < LABEL_OPTIONS.length; i++) if (LABEL_OPTIONS[i].equals(style)) found = i;
         labelStyle = found;
         typeShapes = bool(s, "typeShapes", true);
+        String iss = string(s, "issEntity", "sensor.iss").trim();
+        issEntity = ENTITY_ID.matcher(iss).matches() ? iss : "";
+        issMinElevation = number(s, "issMinElevation", 10, 0, 80);
     }
 
     /** One full cycle of a plane: across the screen, then the pause before it comes round again. */
@@ -70,7 +75,8 @@ final class Config {
     /** Whether the HA template needs to be subscribed again for this change. */
     boolean sameQuery(Config other) {
         return other != null && flightsEntity.equals(other.flightsEntity)
-            && maxDistanceKm == other.maxDistanceKm && maxPlanes == other.maxPlanes;
+            && maxDistanceKm == other.maxDistanceKm && maxPlanes == other.maxPlanes
+            && issEntity.equals(other.issEntity) && issMinElevation == other.issMinElevation;
     }
 
     /**
@@ -91,7 +97,27 @@ final class Config {
             + " f.airport_origin_city or '', f.airport_destination_city or '', f.aircraft_category or '']"
             + " | map('string') | map('replace', ',', ' ') | map('replace', '|', ' ') | join(',')] -%}"
             + "{%- endif -%}{%- endfor -%}{%- endif -%}"
+            + issTemplate()
             + "v1|{{ 'n' if is_state('sun.sun', 'below_horizon') else 'd' }}|{{ ns.out | join('|') }}";
+    }
+
+    /**
+     * Adds "@iss,elevation,peopleInSpace" while the ISS is above the minimum elevation. HA's ISS integration gives the
+     * station's position (lat/long, or latitude/longitude with "Show on map"); its elevation above our horizon follows
+     * from the ground distance and an orbit of about 420 km.
+     */
+    private String issTemplate() {
+        if (issEntity.isEmpty()) return "";
+        String e = "'" + issEntity + "'";
+        return "{%- set la = (state_attr(" + e + ", 'latitude') or state_attr(" + e + ", 'lat')) | float(none) -%}"
+            + "{%- set lo = (state_attr(" + e + ", 'longitude') or state_attr(" + e + ", 'long')) | float(none) -%}"
+            + "{%- if la is not none and lo is not none -%}"
+            + "{%- set th = distance(state_attr('zone.home', 'latitude'), state_attr('zone.home', 'longitude'), la, lo)"
+            + " / 6371.0 -%}"
+            + "{%- set el = (atan2(cos(th) - 6371.0 / 6791.0, sin(th)) * 180 / pi) | round(0) | int -%}"
+            + "{%- if el >= " + issMinElevation + " -%}"
+            + "{%- set ns.out = ns.out + ['@iss,' ~ el ~ ',' ~ (states(" + e + ") | int(0))] -%}"
+            + "{%- endif -%}{%- endif -%}";
     }
 
     private static String string(Map<String, Object> s, String key, String fallback) {

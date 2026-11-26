@@ -126,6 +126,25 @@ public final class FlyoverTest {
         assert slow.crossingMs(Shapes.HELICOPTER) == 68_000 && slow.crossingMs(Shapes.NARROW) == 40_000;
         assert new Config(map("crossing", 40, "typeShapes", false)).crossingMs(Shapes.HELICOPTER) == 40_000;
 
+        // ---- ISS ----
+        Sky.Reading withIss = Sky.parse("v1|n|a,TP1352,A20N,92|@iss,42,10");
+        assert withIss.flights.size() == 2;
+        Sky.Flight iss = withIss.flights.get(1);
+        assert iss.isIss() && iss.shape() == Shapes.ISS && iss.leftToRight();
+        assert iss.label(Config.LABEL_CITIES).equals("ISS \u00B7 42\u00B0") : iss.label(Config.LABEL_CITIES);
+        assert Sky.parse("v1|n|@iss,x,1").flights.isEmpty() : "a broken ISS entry is skipped";
+        String tpl = new Config(map()).template();
+        assert tpl.contains("state_attr('sensor.iss', 'lat')") && tpl.contains("state_attr('sensor.iss', 'latitude')");
+        assert tpl.contains("el >= 10");
+        assert !new Config(map("issEntity", "")).template().contains("@iss");
+        assert new Config(map("issMinElevation", 30)).template().contains("el >= 30");
+        assert !new Config(map()).sameQuery(new Config(map("issMinElevation", 30)));
+        assert new Config(map()).fps == 60;
+        List<Sky.Track> it = Sky.merge(new ArrayList<Sky.Track>(),
+            Sky.parse("v1|d|a,A1,A320,90|b,B1,B738,270|@iss,30,7").flights, 1000, new Config(map()));
+        assert it.size() == 3 : "the ISS does not take a plane's lane";
+        for (Sky.Track tk : it) assert tk.flight.isIss() ? tk.lane == Sky.ISS_LANE : tk.lane >= 0;
+
         // ---- lifecycle ----
         Host host = new Host();
         FlyoverPlugin plugin = new FlyoverPlugin();
@@ -159,6 +178,9 @@ public final class FlyoverTest {
         plugin.onEvent(ev, templateEvent("v1|n|"));
         assert host.shows == 1;
         assert host.status.startsWith("No planes nearby") : host.status;
+        plugin.onEvent(ev, templateEvent("v1|n|@iss,35,7"));
+        assert host.status.startsWith("No planes nearby \u00B7 ISS overhead at 35\u00B0") : host.status;
+        plugin.onEvent(ev, templateEvent("v1|n|"));
 
         // Full-screen Now Playing hides it; shared layout keeps it.
         plugin.onEvent("ks.screensaver.appearance", map("view", "weather", "nowPlaying", true, "nowPlayingShared", false));

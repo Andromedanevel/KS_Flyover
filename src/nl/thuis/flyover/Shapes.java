@@ -16,7 +16,7 @@ import java.util.Set;
 final class Shapes {
     static final float W = 120f, H = 44f;
 
-    static final int BODY = 0, SHADE = 1, WINDOWS = 2, GLASS = 3;
+    static final int BODY = 0, SHADE = 1, WINDOWS = 2, GLASS = 3, PANEL = 4;
 
     static final class Part {
         final int role;
@@ -174,10 +174,32 @@ final class Shapes {
     }, new Rotor[] {new Rotor(Rotor.MAIN, 80.5f, 8.5f, 46f, 2.2f), new Rotor(Rotor.DISC, 14.5f, 16.5f, 5.5f, 3f)},
         at(13, 12.5f), at(80.5f, 13f), null, Float.NaN, 0.62f, 1.7f);
 
-    static final Shape[] ALL = {NARROW, WIDE, QUAD, JUMBO, REARJET, TURBOPROP, LIGHT, HELICOPTER};
+    // ---------- International Space Station: truss with four pairs of solar arrays ----------
+    static final Shape ISS = new Shape("iss", new Part[] {
+        p(BODY, "M4 21.2H116V22.8H4Z"),
+        p(PANEL, "M7 4.5H18V19.5H7Z"),
+        p(PANEL, "M7 24.5H18V39.5H7Z"),
+        p(BODY, "M12 4.5H13V39.5H12Z"),
+        p(PANEL, "M21 4.5H32V19.5H21Z"),
+        p(PANEL, "M21 24.5H32V39.5H21Z"),
+        p(BODY, "M26 4.5H27V39.5H26Z"),
+        p(PANEL, "M88 4.5H99V19.5H88Z"),
+        p(PANEL, "M88 24.5H99V39.5H88Z"),
+        p(BODY, "M93 4.5H94V39.5H93Z"),
+        p(PANEL, "M102 4.5H113V19.5H102Z"),
+        p(PANEL, "M102 24.5H113V39.5H102Z"),
+        p(BODY, "M107 4.5H108V39.5H107Z"),
+        p(SHADE, "M38 23H43V33H38Z"),
+        p(SHADE, "M77 11H82V21H77Z"),
+        p(BODY, "M46 18.5H74C75.4 18.5 76 19.6 76 21V23C76 24.4 75.4 25.5 74 25.5H46C44.6 25.5 44 24.4 44 23V21C44 19.6 44.6 18.5 46 18.5Z"),
+        p(BODY, "M57 12H63V32H57Z"),
+        p(SHADE, "M50 16H54V28H50Z"),
+    }, NONE, null, null, null, Float.NaN, 1.1f, 2f);
+
+    static final Shape[] ALL = {NARROW, WIDE, QUAD, JUMBO, REARJET, TURBOPROP, LIGHT, HELICOPTER, ISS};
 
     /** The slowest shape's crossing time relative to an airliner. */
-    static final float MAX_SLOWNESS = 1.7f;
+    static final float MAX_SLOWNESS = 2f;
 
     // ---------- Type designator to shape ----------
 

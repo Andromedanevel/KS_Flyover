@@ -8,6 +8,7 @@ Your screensaver stays exactly as it is — weather, clock or photos. Flyover on
 - Eastbound planes fly left to right, westbound right to left. Jets leave a contrail.
 - A plane flies across, pauses and comes round again while it stays in range. One that leaves finishes its pass.
 - At night the plane turns grey with lit cabin windows and blinking strobe, beacon and wingtip lights.
+- With Home Assistant's International Space Station (ISS) integration, the ISS crosses the screen whenever it is really above your horizon.
 - Visual only: every tap goes straight through to the screensaver, so dismissing it works as before.
 - Steps aside while a full-screen Now Playing player covers the screensaver.
 - Draws nothing between passes, so an empty sky costs no CPU.
@@ -16,6 +17,7 @@ Your screensaver stays exactly as it is — weather, clock or photos. Flyover on
 
 - Kiosk Satellite **2026.11.11** or newer, with **Settings > Plugin Manager > Enable Plugins** on.
 - The **Flightradar24** integration for Home Assistant ([AlexandrErohin/home-assistant-flightradar24](https://github.com/AlexandrErohin/home-assistant-flightradar24), in HACS). It provides `sensor.flightradar24_current_in_area`. A radius of 10–20 km and a scan interval of 30–60 seconds work well.
+- Optional: the **International Space Station (ISS)** integration (built into Home Assistant), which provides `sensor.iss`.
 
 ## Installation
 
@@ -33,7 +35,7 @@ Or search for `Flyover` in **Settings > Plugin Manager > Browse plugins** in Kio
 2. Choose **Add plugin**, paste `https://github.com/Andromedanevel/ks-flyover` and choose **Preview**.
 3. Review the plugin and choose **Trust and install**, then enable **Flyover**.
 
-Run the **Demo: fly planes now** action from the plugin's page or the kiosk drawer to see it straight away: it starts the screensaver and flies an airliner and a helicopter for two minutes.
+Run the **Demo: fly planes now** action from the plugin's page or the kiosk drawer to see it straight away: it starts the screensaver and flies an airliner, a helicopter and the ISS for two minutes.
 
 ## Settings
 
@@ -42,6 +44,8 @@ Run the **Demo: fly planes now** action from the plugin's page or the kiosk draw
 | Flights sensor | `sensor.flightradar24_current_in_area` | The Flightradar24 "Current in area" sensor |
 | Maximum distance | 15 km | Only closer planes fly across |
 | Planes at once | 2 | The nearest one or two |
+| ISS sensor | `sensor.iss` | From the ISS integration. Empty turns the ISS off |
+| ISS minimum height | 10° | How high above the horizon the ISS must be |
 | Only on screensaver views | empty | Comma-separated view names, as the plugin status shows them. Empty shows planes over every screensaver |
 | Height on screen | 28 % | Distance of the flight path from the top |
 | Plane size | 64 dp | |
@@ -52,13 +56,13 @@ Run the **Demo: fly planes now** action from the plugin's page or the kiosk draw
 | Navigation lights at night | on | After `sun.sun` sets |
 | Crossing time | 40 s | One pass across the screen |
 | Pause between passes | 15 s | |
-| Frame rate | 30 fps | Synced to the screen refresh. 60 is smoothest, 30 is lighter |
+| Frame rate | 60 fps | Synced to the screen refresh. 30 is lighter for older tablets |
 
 The plugin's status line shows the planes in range, whether the screensaver is up and which screensaver view is on screen.
 
 ## Data and privacy
 
-Flyover sends nothing anywhere. Home Assistant's Flightradar24 integration does the flight lookup. Flyover asks Home Assistant, through Kiosk Satellite's own connection, for one short template result: the nearest one or two airborne flights within the maximum distance (flight number, aircraft type, heading, airports and cities) and whether `sun.sun` has set. The tablet itself needs no internet access for this.
+Flyover sends nothing anywhere. Home Assistant's Flightradar24 integration does the flight lookup. Flyover asks Home Assistant, through Kiosk Satellite's own connection, for one short template result: the nearest one or two airborne flights within the maximum distance (flight number, aircraft type, heading, airports and cities) whether `sun.sun` has set and, with the ISS integration, how high the ISS stands above your horizon. The tablet itself needs no internet access for this.
 
 Flyover is not affiliated with Flightradar24.
 

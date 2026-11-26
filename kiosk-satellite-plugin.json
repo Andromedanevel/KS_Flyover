@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "flyover",
   "name": "Flyover",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "apiVersion": 1,
   "minAndroidSdk": 24,
   "minAppVersion": "2026.11.11",
@@ -48,6 +48,26 @@
       "step": 1,
       "group": "Flights",
       "description": "The nearest one or two planes."
+    },
+    {
+      "key": "issEntity",
+      "type": "entity",
+      "title": "ISS sensor",
+      "default": "sensor.iss",
+      "group": "Flights",
+      "description": "From Home Assistant's International Space Station (ISS) integration. While the ISS is above your horizon it crosses the screen too. Leave empty to turn this off."
+    },
+    {
+      "key": "issMinElevation",
+      "type": "number",
+      "title": "ISS minimum height",
+      "default": 10,
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "°",
+      "group": "Flights",
+      "description": "How high above the horizon the ISS must be. 10° is a usual pass."
     },
     {
       "key": "views",
@@ -152,7 +172,7 @@
       "key": "fps",
       "type": "number",
       "title": "Frame rate",
-      "default": 30,
+      "default": 60,
       "min": 10,
       "max": 60,
       "step": 10,

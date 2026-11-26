@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0
+
+- **The ISS**: with Home Assistant's International Space Station (ISS) integration, the station crosses the screen whenever it is above your horizon, labelled with how high it stands (`ISS · 42°`). Settings **ISS sensor** and **ISS minimum height**.
+- Frame rate now defaults to 60 fps, which is noticeably smoother. Lower it on older tablets.
+- The demo also flies the ISS.
+
 ## 1.1.0
 
 - **Planes match their aircraft type**: airliner, widebody, jumbo (747, A380), four-engine, regional and business jets with rear engines, turboprops, light aircraft and helicopters each get their own silhouette and size, chosen from the ICAO type code and Flightradar24's category. Propellers and rotors spin; smaller and lower-flying aircraft cross more slowly and leave no contrail. Turn off **Match the aircraft type** for the single airliner shape.

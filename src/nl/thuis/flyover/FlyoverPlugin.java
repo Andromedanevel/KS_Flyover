@@ -218,6 +218,7 @@ public final class FlyoverPlugin implements KioskPlugin {
         if (config.maxPlanes > 1) {
             next.add(new Sky.Track(new Sky.Flight("demo2", "PHPXE", "EC35", 265, "", "", "", "", "Helicopter"), now + config.cycleMs() * 45 / 100, now + DEMO_MS, 1));
         }
+        next.add(new Sky.Track(Sky.Flight.iss(42), now + config.cycleMs() * 20 / 100, now + DEMO_MS, Sky.ISS_LANE));
         tracks = next;
         publish();
         // Show it straight away: start the screensaver (needs host.control) so the planes have something to fly over.
@@ -234,10 +235,14 @@ public final class FlyoverPlugin implements KioskPlugin {
         if (error) {
             text = haProblem;
         } else {
-            int n = lastFlights.size();
+            List<Sky.Flight> planes = new ArrayList<>();
+            Sky.Flight iss = null;
+            for (Sky.Flight f : lastFlights) { if (f.isIss()) iss = f; else planes.add(f); }
+            int n = planes.size();
             StringBuilder b = new StringBuilder();
             b.append(n == 0 ? "No planes nearby" : n == 1 ? "1 plane nearby: " : n + " planes nearby: ");
-            for (int i = 0; i < n; i++) b.append(i == 0 ? "" : ", ").append(lastFlights.get(i).label(config.labelStyle));
+            for (int i = 0; i < n; i++) b.append(i == 0 ? "" : ", ").append(planes.get(i).label(config.labelStyle));
+            if (iss != null) b.append(" · ISS overhead at ").append(iss.type);
             b.append(" · Screensaver ").append(screensaverActive ? "on" : "off");
             if (screensaverView != null) b.append(" (view: ").append(screensaverView).append(')');
             if (screensaverActive && !viewAllowed()) b.append(" · not shown on this view");

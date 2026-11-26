@@ -158,7 +158,8 @@ final class SkyView extends View {
             // Travel from fully off one edge to fully off the other, sprite included.
             float travel = getWidth() + sp.bitmap.getWidth();
             float left = ltr ? -sp.bitmap.getWidth() + travel * p : getWidth() - travel * p;
-            float laneTop = getHeight() * c.heightPercent / 100f + t.lane * baseH * 2.4f;
+            // The ISS flies in its own lane above the planes, but never off the top of the screen.
+            float laneTop = Math.max(getHeight() * 0.04f, getHeight() * c.heightPercent / 100f + t.lane * baseH * 2.4f);
             float centre = laneTop + baseH / 2f - p * getHeight() * 0.04f;   // a slight climb across the screen
             float top = centre - H * scale / 2f;
 
@@ -261,11 +262,13 @@ final class SkyView extends View {
         int shade = Color.argb(night ? 200 : 220, Color.red(body), Color.green(body), Color.blue(body));
         int windows = night ? Color.argb(150, 255, 214, 140) : Color.argb(150, 127, 151, 179);
         int glass = Color.argb(150, 127, 151, 179);
+        int panel = night ? Color.argb(230, 120, 112, 92) : Color.argb(235, 176, 140, 74);   // gold solar arrays
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         Path[] p = pathsFor(shape);
         for (int i = 0; i < p.length; i++) {
             int role = shape.parts[i].role;
-            paint.setColor(role == Shapes.BODY ? body : role == Shapes.SHADE ? shade : role == Shapes.WINDOWS ? windows : glass);
+            paint.setColor(role == Shapes.BODY ? body : role == Shapes.SHADE ? shade : role == Shapes.WINDOWS ? windows
+                : role == Shapes.PANEL ? panel : glass);
             if (!night && i == 0) paint.setShadowLayer(1.2f, 0, 0.6f, Color.argb(50, 0, 0, 0));
             else paint.clearShadowLayer();
             canvas.drawPath(p[i], paint);
